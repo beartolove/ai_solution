@@ -1,0 +1,24 @@
+# Private environment settings and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Editor settings
+.vscode/
+.idea/
+
+# Local generated files
+data/
+output/
+*.log
+
+# Local Todo demo versions
+todo_v1.html
+todo_v2.html
+todo_v3.html
