@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "影片下載器同步",
+  "version": "1.2.0",
+  "description": "把 Chrome 的登入 Cookie 同步給本機「影片下載器」，並可一鍵將目前網頁加入下載佇列。",
+  "permissions": [
+    "cookies",
+    "alarms",
+    "contextMenus",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*",
+    "*://*.youtube.com/*",
+    "*://*.google.com/*",
+    "*://*.facebook.com/*",
+    "*://*.fb.watch/*",
+    "*://*.instagram.com/*",
+    "*://*.bilibili.com/*",
+    "*://*.b23.tv/*",
+    "*://*.x.com/*",
+    "*://*.twitter.com/*",
+    "*://*.tiktok.com/*",
+    "*://*.threads.net/*",
+    "*://*.threads.com/*",
+    "*://*.vimeo.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "影片下載器同步"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

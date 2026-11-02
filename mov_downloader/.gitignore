@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+download/
+data/
+tools/
+.env
+.venv-old*/
+.cache/

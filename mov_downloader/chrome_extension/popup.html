@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --p:#2563eb; --bg:#fff; --t:#1a2230; --m:#5d6b80; --b:#dde2ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161b24; --t:#e6ebf2; --m:#95a2b6; --b:#2a3342; --p:#4f8cff; } }
+  body { width: 300px; margin: 0; padding: 14px; font: 14px/1.5 "Microsoft JhengHei", system-ui, sans-serif; background: var(--bg); color: var(--t); }
+  h1 { font-size: 15px; margin: 0 0 10px; }
+  .st { font-size: 12px; color: var(--m); margin-bottom: 10px; }
+  .st b.ok { color: #16a34a; } .st b.bad { color: #dc2626; }
+  button { width: 100%; padding: 9px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--b); background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  button.primary { background: var(--p); border-color: var(--p); color: #fff; font-weight: 600; }
+  label { display: flex; gap: 8px; align-items: center; font-size: 13px; margin: 4px 0 10px; }
+  #msg { font-size: 12px; min-height: 18px; }
+  a { color: var(--p); font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>影片下載器同步</h1>
+  <div class="st">下載器：<b id="srv">檢查中…</b><br>上次同步：<span id="last">—</span></div>
+  <button class="primary" id="add">把目前網頁加入下載佇列</button>
+  <button id="sync">同步 Cookie</button>
+  <button id="syncPrivate" title="會員影片下載失敗時使用">從無痕視窗同步 YouTube 登入</button>
+  <div class="st" id="privHint">會員影片下載失敗時：開無痕視窗 → 登入 YouTube → 按上面按鈕 → 直接關閉無痕視窗（不要登出）。<br>上次無痕同步：<span id="lastPriv">—</span></div>
+  <label><input type="checkbox" id="auto" checked> 每 30 分鐘自動同步</label>
+  <div id="msg"></div>
+  <a href="http://127.0.0.1:8765/" target="_blank">開啟影片下載器</a>
+  <script src="popup.js"></script>
+</body>
+</html>

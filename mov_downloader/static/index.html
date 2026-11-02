@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影片下載器</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232563eb'/%3E%3Cpath d='M12 5v9m0 0-4-4m4 4 4-4M6 18h12' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/summary.css">
+</head>
+<body>
+<div class="app" id="app">
+  <!-- 左側選單 -->
+  <aside class="sidebar" id="sidebar" aria-label="主選單">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" class="logo" aria-hidden="true"><rect width="24" height="24" rx="6"/><path d="M12 5v9m0 0-4-4m4 4 4-4M6 18h12"/></svg>
+      <span class="label brand-text">影片下載器<small class="ver" id="appVer">v—</small></span>
+    </div>
+    <nav>
+      <button class="nav-item active" data-view="queue" title="下載佇列">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+        <span class="label">下載佇列</span><span class="badge" id="navBadge" hidden>0</span>
+      </button>
+      <button class="nav-item" data-view="library" title="影片庫與播放">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>
+        <span class="label">影片庫</span>
+      </button>
+      <button class="nav-item" data-view="subs" title="訂閱清單：固定追蹤的播放清單">
+        <svg viewBox="0 0 24 24"><path d="M5 5a14 14 0 0 1 14 14M5 11a8 8 0 0 1 8 8"/><circle cx="6" cy="18" r="1.5"/></svg>
+        <span class="label">訂閱清單</span><span class="badge" id="subsBadge" hidden>0</span>
+      </button>
+      <button class="nav-item" data-view="settings" title="設定">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span class="label">設定</span>
+      </button>
+      <button class="nav-item" data-view="errors" title="錯誤紀錄：所有功能的錯誤與警告">
+        <svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17v.01"/></svg>
+        <span class="label">錯誤紀錄</span><span class="badge err" id="errBadge" hidden>0</span>
+      </button>
+      <button class="nav-item" data-view="help" title="使用說明">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>
+        <span class="label">使用說明</span>
+      </button>
+    </nav>
+    <div class="side-foot">
+      <div class="cookie-pill" id="cookiePill" title="Cookie 狀態"><span class="dot"></span><span class="label" id="cookieText">Cookie 檢查中</span></div>
+      <button class="nav-item collapse-btn" id="collapseBtn" title="收合／展開選單">
+        <svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+        <span class="label">收合選單</span>
+      </button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- 主內容 -->
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="開啟選單"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <h1 id="viewTitle">下載佇列</h1>
+      <div class="top-tools">
+        <div class="font-ctl" role="group" aria-label="字型大小">
+          <button class="icon-btn" id="fontDown" title="字型縮小">A−</button>
+          <button class="icon-btn" id="fontReset" title="字型恢復預設"><span id="fontPct">100%</span></button>
+          <button class="icon-btn" id="fontUp" title="字型放大">A＋</button>
+        </div>
+        <button class="icon-btn" id="themeBtn" title="切換深淺色"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      </div>
+    </header>
+
+    <!-- 下載佇列 -->
+    <section class="view active" id="view-queue">
+      <div class="card add-card">
+        <label for="urlInput" class="card-title">貼上影片網址（可一次貼多個，每行一個）</label>
+        <textarea id="urlInput" rows="4" placeholder="https://www.youtube.com/watch?v=...&#10;https://www.instagram.com/reel/...&#10;https://www.bilibili.com/video/BV..."></textarea>
+        <div class="row">
+          <button class="btn primary" id="addBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>加入佇列</button>
+          <button class="btn" id="pasteBtn"><svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>從剪貼簿貼上</button>
+          <label class="check pl-check" title="影片網址中同時有 list=… 時"><input type="checkbox" id="plQuick"> 含播放清單的影片網址，下載整個清單</label>
+          <span class="hint">支援 YouTube（含播放清單、頻道）、Facebook、Instagram、B站、X、TikTok、Threads 等</span>
+        </div>
+      </div>
+
+      <div class="queue-head">
+        <div class="stats" id="stats"></div>
+        <div class="row">
+          <button class="btn sm" id="pauseBtn">暫停佇列</button>
+          <button class="btn sm" id="clearBtn">清除已結束</button>
+          <button class="btn sm" id="openDirBtn">開啟下載資料夾</button>
+        </div>
+      </div>
+      <div id="jobList" class="job-list"></div>
+      <div class="empty" id="queueEmpty">目前沒有下載工作。貼上網址後按「加入佇列」開始。</div>
+    </section>
+
+    <!-- 影片庫 -->
+    <section class="view" id="view-library">
+      <div class="player-wrap" id="playerWrap" hidden>
+        <div class="player" id="player" tabindex="0">
+          <video id="video" playsinline preload="metadata"></video>
+          <div class="sub-overlay" id="subOverlay" aria-live="off"></div>
+          <div class="spinner" aria-hidden="true"></div>
+          <div class="player-msg" id="playerMsg" role="alert" hidden></div>
+          <div class="big-play" id="bigPlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="controls" id="controls">
+            <input type="range" id="seek" class="seek" min="0" max="1000" value="0" aria-label="播放進度">
+            <div class="ctl-row">
+              <button class="pbtn" id="playBtn" title="播放／暫停（空白鍵）"><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+              <button class="pbtn" id="back10" title="倒退 10 秒（←）"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/><text x="12" y="15.5" text-anchor="middle" font-size="7" stroke="none" fill="currentColor">10</text></svg></button>
+              <button class="pbtn" id="fwd10" title="快轉 10 秒（→）"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8m0-5v5h-5"/><text x="12" y="15.5" text-anchor="middle" font-size="7" stroke="none" fill="currentColor">10</text></svg></button>
+              <button class="pbtn" id="muteBtn" title="靜音（M）"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path id="volWave" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+              <input type="range" id="volume" class="volume" min="0" max="1" step="0.05" value="1" aria-label="音量">
+              <span class="time" id="time">0:00 / 0:00</span>
+              <span class="spacer"></span>
+              <label class="psel" title="字幕（C 鍵切換）">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h4M13 12h4M7 15.5h7"/></svg>
+                <select id="subSel" aria-label="字幕"></select>
+              </label>
+              <label class="psel" title="字幕大小">
+                <span class="mini">字</span>
+                <select id="cueSize" aria-label="字幕大小">
+                  <option value="80">小</option><option value="100" selected>中</option><option value="130">大</option><option value="165">特大</option>
+                </select>
+              </label>
+              <label class="psel" title="播放速度（&lt; &gt; 鍵）">
+                <svg viewBox="0 0 24 24"><path d="M12 14l4-4"/><path d="M3.3 17a9 9 0 1 1 17.4 0"/></svg>
+                <select id="speedSel" aria-label="播放速度">
+                  <option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option>
+                  <option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option>
+                  <option value="2">2×</option><option value="2.5">2.5×</option><option value="3">3×</option>
+                </select>
+              </label>
+              <button class="pbtn" id="pipBtn" title="子母畫面"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1" fill="currentColor"/></svg></button>
+              <button class="pbtn" id="fsBtn" title="全螢幕（F）"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="now-playing">
+          <div class="np-title" id="npTitleView">
+            <h2 id="npTitle"></h2>
+            <button class="icon-btn sm-icon" id="npEdit" title="更改影片名稱" aria-label="更改影片名稱"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>
+          </div>
+          <form class="np-rename" id="npRenameForm" hidden>
+            <input id="npRenameInput" aria-label="新的影片名稱" maxlength="180">
+            <button class="btn sm primary" type="submit">儲存</button>
+            <button class="btn sm" type="button" id="npRenameCancel">取消</button>
+          </form>
+          <div class="row">
+            <button class="btn sm" id="npStar" aria-pressed="false" title="標示星號：想優先看的影片（S 鍵）">☆ 星號</button>
+            <button class="btn sm" id="npWatched" aria-pressed="false" title="標示這部影片已看完（W 鍵）">標為已看完</button>
+            <button class="btn sm" id="npGallery" hidden title="逐頁觀看這部影片的圖片摘要">🖼 圖片摘要</button>
+            <button class="btn sm sm-btn" id="npSummary" title="用 AI 依字幕整理成最多 5 頁的重點摘要">📝 重點摘要</button>
+            <button class="btn sm" id="npAsr" hidden title="影片沒有字幕時，用語音辨識（Breeze-ASR-25）產生字幕">語音辨識產生字幕</button>
+            <button class="btn sm" id="npTranslate" hidden>翻譯成中文字幕</button>
+            <a class="btn sm" id="npDownload" download>另存影片</a>
+            <button class="btn sm" id="npClose">關閉播放器</button>
+          </div>
+        </div>
+        <div class="card tr-progress" id="trProgress" hidden>
+          <div class="tr-head"><b id="trTitle">翻譯字幕中</b><span class="hint" id="trInfo"></span></div>
+          <div class="bar"><i id="trBar"></i></div>
+          <div class="tr-foot"><span id="trPct">0%</span><span class="row"><span class="hint" id="trEta"></span><button class="btn sm" id="trCancel" hidden>取消辨識</button></span></div>
+        </div>
+        <div class="card tr-progress" id="smProgress" hidden>
+          <div class="tr-head"><b id="smPTitle">產生重點摘要中</b><span class="hint" id="smPInfo"></span></div>
+          <div class="bar"><i id="smPBar"></i></div>
+          <div class="tr-foot"><span id="smPPct">0%</span><span class="row"><span class="hint" id="smPEta"></span><button class="btn sm" id="smPCancel">取消</button></span></div>
+        </div>
+        <div class="card np-info" id="npInfo">
+          <div class="np-src">
+            <b>來源網址</b>
+            <div class="np-src-row" id="npSrcView">
+              <a id="npSrcLink" target="_blank" rel="noopener"></a>
+              <button class="btn sm" id="npCopyUrl">複製網址</button>
+              <button class="btn sm" id="npEditUrl">修改</button>
+            </div>
+            <form class="np-src-row" id="npSrcForm" hidden>
+              <input id="npSrcInput" type="url" placeholder="貼上這部影片的原始網址 https://…" aria-label="來源網址">
+              <button class="btn sm primary" type="submit">儲存</button>
+              <button class="btn sm" type="button" id="npSrcCancel">取消</button>
+            </form>
+          </div>
+          <dl class="np-meta" id="npMeta"></dl>
+          <div class="np-sec">
+            <div class="np-sec-head">
+              <b>原文簡介</b>
+              <span class="row">
+                <button class="btn sm" id="npCopyDesc">複製簡介</button>
+                <button class="btn sm" id="npFetchMeta" title="從原網址重新抓取標題與簡介">重新抓取</button>
+              </span>
+            </div>
+            <div class="np-desc" id="npDesc"></div>
+            <button class="linklike" id="npDescMore" hidden>展開全文</button>
+          </div>
+          <div class="np-sec">
+            <div class="np-sec-head"><b>Hashtag</b><span class="hint">點 hashtag 可在影片庫篩選</span></div>
+            <div class="tag-edit">
+              <span id="npTags" class="tag-list"></span>
+              <form id="npTagForm" class="tag-add small">
+                <span class="hash">#</span>
+                <input id="npTagInput" list="tagList" placeholder="新增 hashtag" aria-label="新增 hashtag" autocomplete="off">
+                <button class="btn sm" type="submit">加上</button>
+              </form>
+            </div>
+          </div>
+          <div class="np-sec">
+            <div class="np-sec-head"><label for="npNote"><b>我的備註</b></label><span class="hint" id="npNoteMsg"></span></div>
+            <textarea id="npNote" rows="3" placeholder="可寫下重點、關鍵字，影片庫搜尋時也會找得到"></textarea>
+            <div class="row"><button class="btn sm primary" id="npNoteSave">儲存備註</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lib-head">
+        <input type="search" id="libSearch" placeholder="搜尋名稱、原文標題、簡介、頻道、備註、#hashtag…" aria-label="搜尋影片">
+        <select id="tagFilter" aria-label="依 hashtag 篩選" title="依 hashtag 篩選"><option value="">全部 hashtag</option></select>
+        <form class="tag-add excl-add" id="exclForm" title="輸入要排除的 hashtag，可用逗號或空白分隔多個；輸入時會出現建議">
+          <span class="hash excl-hash">−#</span>
+          <input id="exclInput" list="tagList" placeholder="排除 hashtag，可輸入多個" aria-label="要排除的 hashtag" autocomplete="off">
+          <button class="btn sm" type="submit">排除</button>
+        </form>
+        <select id="watchFilter" aria-label="依觀看狀態篩選" title="依觀看狀態篩選">
+          <option value="">全部影片</option><option value="unwatched">尚未看完</option><option value="watched">已看完</option><option value="nosub">沒有字幕</option>
+        </select>
+        <select id="sumFilter" aria-label="依重點摘要篩選" title="依重點摘要篩選">
+          <option value="">摘要：全部</option><option value="yes">📝 已摘要</option><option value="no">未摘要</option>
+          <option value="img">🖼 有圖片摘要</option><option value="noimg">沒有圖片摘要</option><option value="any">有任一種摘要</option>
+        </select>
+        <select id="sortSel" aria-label="排序方式" title="排序方式">
+          <option value="dl_desc">最近下載優先</option>
+          <option value="dl_asc">最早下載優先</option>
+          <option value="up_desc">上傳日期：新 → 舊</option>
+          <option value="up_asc">上傳日期：舊 → 新</option>
+          <option value="dur_asc">片長：短 → 長</option>
+          <option value="dur_desc">片長：長 → 短</option>
+          <option value="title">名稱</option>
+          <option value="size_desc">檔案大小：大 → 小</option>
+        </select>
+        <button class="btn sm" id="starFilter" aria-pressed="false" title="只顯示有星號的影片">★ 只看星號</button>
+        <label class="check star-top" title="不論排序方式，有星號的影片都排在最前面"><input type="checkbox" id="starTop"> 星號置頂</label>
+        <button class="btn sm" id="selectModeBtn" title="多選影片以加上 hashtag 或刪除"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="m14.5 17.5 2 2 4-4"/></svg>整理模式</button>
+        <button class="btn sm" id="lockBtn" title="顯示／隱藏設為隱藏的影片"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path id="lockShackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="lockText">隱藏影片</span></button>
+        <button class="btn sm" id="libRefresh">重新整理</button>
+      </div>
+      <div class="excl-chips" id="exclChips" hidden></div>
+      <form class="unlock-form card" id="unlockForm" hidden>
+        <label for="unlockInput"><b>輸入密碼以顯示隱藏影片</b></label>
+        <div class="row">
+          <input type="password" id="unlockInput" autocomplete="current-password" placeholder="密碼">
+          <button class="btn sm primary" type="submit">解鎖</button>
+          <button class="btn sm" type="button" id="unlockCancel">取消</button>
+        </div>
+        <span class="hint" id="unlockMsg">解鎖後 2 小時未使用、或重新啟動程式會自動上鎖</span>
+      </form>
+      <div class="sel-bar" id="selBar" hidden>
+        <div class="sel-row">
+          <b id="selCount">已選 0 部</b>
+          <button class="btn sm" id="selAll">全選</button>
+          <button class="btn sm" id="selNone">取消選取</button>
+          <span class="spacer"></span>
+          <button class="btn sm danger-btn" id="selDelete">刪除所選</button>
+          <button class="btn sm primary" id="selDone">完成</button>
+        </div>
+        <div class="sel-row">
+          <form class="tag-add" id="tagAddForm">
+            <span class="hash">#</span>
+            <input id="tagAddInput" list="tagList" placeholder="輸入 hashtag，可用逗號或空白分隔多個" aria-label="要加上的 hashtag" autocomplete="off">
+            <button class="btn sm primary" type="submit">加到所選影片</button>
+          </form>
+          <select id="tagRemoveSel" aria-label="從所選影片移除 hashtag"><option value="">移除 hashtag…</option></select>
+          <button class="btn sm" id="selSummary" title="用 AI 為所選影片產生重點摘要（沒有字幕的會先語音辨識）">📝 重點摘要所選</button>
+          <button class="btn sm" id="selAsr" title="為所選影片做語音辨識（已有字幕的會重新辨識並覆蓋）">語音辨識所選</button>
+          <button class="btn sm" id="selStar">★ 加星號</button>
+          <button class="btn sm" id="selUnstar">取消星號</button>
+          <button class="btn sm" id="selWatched">✓ 標為已看完</button>
+          <button class="btn sm" id="selUnwatched">標為未看</button>
+          <button class="btn sm" id="selHide" title="加上 #隱藏，輸入密碼才看得到">🔒 設為隱藏</button>
+          <button class="btn sm" id="selUnhide">取消隱藏</button>
+        </div>
+        <div class="sel-tags" id="selTags"></div>
+      </div>
+      <datalist id="tagList"></datalist>
+      <div class="card batch-card" id="batchCard" hidden>
+        <div class="tr-head"><b id="batchTitle">批次語音辨識</b>
+          <span class="row"><button class="btn sm" id="batchCancel">停止</button><button class="btn sm" id="batchClose" hidden>關閉</button></span></div>
+        <div class="bar"><i id="batchBar"></i></div>
+        <div class="tr-foot"><span id="batchInfo"></span><span class="hint" id="batchEta"></span></div>
+        <div class="hint" id="batchCur"></div>
+        <div class="err" id="batchErr" hidden></div>
+      </div>
+      <div class="card batch-card" id="sumCard" hidden>
+        <div class="tr-head"><b id="sumTitle">批次重點摘要</b>
+          <span class="row"><button class="btn sm" id="sumCancel">停止</button><button class="btn sm" id="sumClose" hidden>關閉</button></span></div>
+        <div class="bar"><i id="sumBar"></i></div>
+        <div class="tr-foot"><span id="sumInfo"></span><span class="hint" id="sumEta"></span></div>
+        <div class="hint" id="sumCur"></div>
+        <div class="err" id="sumErr" hidden></div>
+      </div>
+      <div class="lib-count-row"><span class="lib-count hint" id="libCount"></span>
+        <button class="btn sm" id="batchAsrBtn" hidden title="找出所有沒有字幕的影片，在背景一部一部做語音辨識"></button></div>
+      <div class="lib-grid" id="libGrid"></div>
+      <div class="lib-more" id="libMore" hidden><span class="hint" id="libMoreText"></span><button class="btn sm" id="libMoreBtn">顯示更多</button></div>
+      <div class="empty" id="libEmpty" hidden>下載資料夾中還沒有影片。</div>
+    </section>
+
+    <!-- 設定 -->
+    <!-- 訂閱清單 -->
+    <section class="view" id="view-subs">
+      <div class="card add-card">
+        <label for="subUrl" class="card-title">加入固定追蹤的 YouTube 播放清單或頻道（可一次貼多個）</label>
+        <textarea id="subUrl" rows="2" placeholder="https://www.youtube.com/playlist?list=...&#10;https://www.youtube.com/@頻道名稱/videos"></textarea>
+        <div class="row">
+          <select id="subMode" aria-label="加入時要不要下載現有影片" style="width:auto">
+            <option value="track">只追蹤之後的新影片（現有的不下載）</option>
+            <option value="all">現有影片全部下載，之後只抓新影片</option>
+            <option value="fill">一律補齊：清單裡沒下載過的都抓（刪除過的除外）</option>
+          </select>
+          <label class="check"><input type="checkbox" id="subStar"> 新影片自動加星號</label>
+          <button class="btn primary" id="subAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>加入訂閱</button>
+        </div>
+      </div>
+      <div class="queue-head">
+        <div class="stats" id="subStats"></div>
+        <div class="row"><button class="btn" id="subFillAll" title="所有訂閱清單裡從沒下載過的影片全部下載（刪除過的視為已看完，不會再抓）">補齊全部缺少的影片</button>
+          <button class="btn primary" id="subScanAll"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg>一鍵掃描全部新影片</button></div>
+      </div>
+      <div class="job-list" id="subList"></div>
+      <div class="empty" id="subEmpty">還沒有訂閱。貼上常看的播放清單或頻道網址，之後按一次「一鍵掃描」就會把新影片加入下載佇列。</div>
+    </section>
+
+    <section class="view" id="view-settings">
+      <form id="settingsForm" class="settings">
+        <fieldset class="card">
+          <legend>帳號授權（Cookie）</legend>
+          <label class="field">
+            <span>Cookie 來源</span>
+            <select name="cookie_mode">
+              <option value="extension">Chrome 擴充功能同步（建議）</option>
+              <option value="browser">直接讀取瀏覽器 Cookie</option>
+              <option value="file">指定 cookies.txt 檔案</option>
+              <option value="none">不使用 Cookie</option>
+            </select>
+          </label>
+          <div class="field-note" id="extStatus" data-mode="extension"></div>
+          <div class="field-note" data-mode="none">只能下載公開影片，需要登入的影片（會員、私人、年齡限制）會失敗。</div>
+          <div data-mode="browser" class="mode-box">
+          <div class="field-note">Chrome／Edge 新版在 Windows 上有「應用程式綁定加密」，而且 Chrome 開著時會鎖住 Cookie 資料庫，這個模式多半會失敗；Firefox 可正常使用。用 Chrome 請改選「Chrome 擴充功能同步」。</div>
+          <div class="grid2">
+            <label class="field"><span>瀏覽器</span>
+              <select name="browser"><option>chrome</option><option>edge</option><option>brave</option><option>firefox</option><option>opera</option><option>vivaldi</option></select>
+            </label>
+            <label class="field"><span>設定檔名稱（選填）</span><input name="browser_profile" placeholder="例如 Default、Profile 1"></label>
+          </div>
+          <div class="row"><button type="button" class="btn sm" id="testCookieBtn">測試讀取瀏覽器 Cookie</button><span class="hint" id="testCookieResult"></span></div>
+          </div>
+          <label class="field" data-mode="file"><span>cookies.txt 路徑（自行匯出的檔案，請填完整路徑）</span><input name="cookie_file" placeholder="例如 D:\Downloads\cookies.txt"></label>
+          <div class="field-note" data-mode="file">用其他工具（例如 Get cookies.txt LOCALLY）匯出的 Netscape 格式 cookies.txt。請放在 <code>data</code> 資料夾以外的位置——<code>data\cookies.txt</code> 是擴充功能同步專用，會被覆蓋。</div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>下載</legend>
+          <label class="field"><span>下載資料夾</span><input name="download_dir" autocomplete="off" placeholder="download"></label>
+          <label class="field"><span>影片庫也納入的子資料夾（放本機原有影片；多個用逗號分隔）</span><input name="library_subdirs" autocomplete="off" placeholder="local_movies"></label>
+          <div class="grid2">
+            <label class="field"><span>最高畫質</span>
+              <select name="max_height"><option value="0">最佳畫質</option><option value="2160">4K（2160p）</option><option value="1440">1440p</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select>
+            </label>
+            <label class="field"><span>ffmpeg 位置（選填）</span><input name="ffmpeg_path" placeholder="自動偵測"></label>
+          </div>
+          <label class="check"><input type="checkbox" name="append_id"> 檔名後面加上影片 ID（避免同名覆蓋）</label>
+          <label class="check" title="簡體字逐字轉正體、日文新字體轉正體、表情符號與罕見符號拿掉；舊式看圖或預覽軟體才開得了檔"><input type="checkbox" name="big5_names"> 檔名只用 Big5 字元（舊式看圖／預覽軟體才開得了）</label>
+          <label class="check"><input type="checkbox" id="autoWatched"> 影片播放到結尾時，自動標示為「已看完」</label>
+          <label class="check"><input type="checkbox" name="playlist"> 影片網址同時帶有播放清單（watch?v=…&amp;list=…）時，下載整個清單</label>
+          <label class="check"><input type="checkbox" name="playlist_tag"> 播放清單的影片自動加上「清單名稱」hashtag</label>
+          <label class="field" style="max-width:16rem"><span>單一播放清單最多下載幾部</span><input type="number" name="playlist_max" min="1" max="5000"></label>
+          <p class="hint" style="margin:0">播放清單網址（youtube.com/playlist?list=…）與頻道影片頁一定會下載整個清單，並拆成一部一部依序下載。</p>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>字幕</legend>
+          <label class="check"><input type="checkbox" name="subtitles"> 下載字幕並存成 SRT</label>
+          <label class="check"><input type="checkbox" name="canto_written"> 粵語（香港話）口語轉為台灣書面用語</label>
+          <label class="field"><span>外語字幕處理（英文、日文、阿拉伯文等所有非中文字幕）</span>
+            <select name="en_mode">
+              <option value="keep">只保留原文</option>
+              <option value="translate">自動翻譯成正體中文（同時保留原文檔）</option>
+              <option value="bilingual">翻譯並另存中文＋原文雙語字幕</option>
+            </select>
+          </label>
+          <label class="field"><span>翻譯引擎</span>
+            <select name="translator">
+              <option value="google">Google 翻譯（免費，不需設定）</option>
+              <option value="llm">AI 翻譯（品質較好，需在 .env 設定 API）</option>
+              <option value="codex">本機 Codex CLI（不經過 Azure；較慢）</option>
+              <option value="local">本機 TranslateGemma（在這台電腦翻譯，不上傳、不需金鑰；需有模型）</option>
+            </select>
+          </label>
+          <div class="field-note" id="llmStatus"></div>
+          <div class="row"><button type="button" class="btn sm" id="testLlmBtn">AI 連線診斷</button><span class="hint" id="testLlmResult">逐步檢查設定、網路、金鑰、模型與翻譯是否正常</span></div>
+          <ol class="diag" id="diagList" hidden></ol>
+          <div class="row"><button type="button" class="btn sm" id="untagBtn">移除重點摘要先前自動加到影片的 hashtag</button><span class="hint">v1.18.1 起摘要的 hashtag 只顯示在摘要頁，不再改動影片</span></div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>重點摘要</legend>
+          <label class="field"><span>摘要使用的 AI</span>
+            <select name="summary_engine">
+              <option value="llm">.env 設定的 AI（Azure／OpenAI 相容）</option>
+              <option value="codex">本機 Codex CLI（使用你登入的 Codex，不經過 Azure）</option>
+              <option value="local">本機 Gemma 4（在這台電腦產生，不上傳；較慢，需有模型）</option>
+            </select>
+          </label>
+          <p class="hint" data-engine="local" style="margin:0">本機 Gemma 4 的大小與執行裝置在下方「本機 AI 模型」設定。長影片在本機摘要可能要數分鐘到十幾分鐘，品質通常不如雲端 AI，適合沒有網路或不想上傳時使用。</p>
+          <div data-engine="codex" class="mode-box">
+            <p class="hint" style="margin:0"><b>本機 Codex 設定（翻譯與重點摘要共用）</b>：需先在電腦上安裝 Codex CLI（<code>npm install -g @openai/codex</code>），並在命令提示字元執行 <code>codex login</code> 登入。摘要時會以唯讀模式呼叫 <code>codex exec</code>，每次呼叫約需數秒到數十秒。</p>
+            <div class="grid2">
+              <label class="field"><span>Codex 路徑（留空＝自動尋找）</span><input name="codex_path" placeholder="例如 C:\Users\user\AppData\Roaming\npm\codex.cmd"></label>
+              <label class="field"><span>模型（留空＝Codex 預設）</span><input name="codex_model" placeholder="例如 gpt-5-codex"></label>
+            </div>
+            <div class="row"><button type="button" class="btn sm" id="testCodexBtn">測試 Codex 連線</button><span class="hint" id="testCodexResult">找執行檔、檢查版本、實際呼叫一次</span></div>
+            <ol class="diag" id="codexDiag" hidden></ol>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>語音辨識（影片沒有字幕時）</legend>
+          <p class="hint" style="margin:0">流程：用 ffmpeg 把 MP4 抽出聲音成 MP3，再用語音辨識模型辨識成 SRT，之後依上方字幕設定轉成台灣用語或翻譯。全程在你的電腦上執行，不會上傳聲音。</p>
+          <label class="check"><input type="checkbox" name="asr_auto"> 下載的影片沒有字幕時，自動做語音辨識</label>
+          <div class="field-note" id="asrStatus"></div>
+          <label class="field"><span>辨識模型</span>
+            <select name="asr_model">
+              <option value="auto">自動（中文用 Breeze-ASR-25；外語影片用 Whisper large-v3-turbo）</option>
+              <option value="breeze">一律用 Breeze-ASR-25（台灣華語、中英夾雜最準）</option>
+              <option value="turbo">一律用 Whisper large-v3-turbo（外語較準、速度較快）</option>
+            </select>
+          </label>
+          <p class="hint" style="margin:0">「自動」依影片的原始語言判斷（舊影片沒有記錄時看標題與簡介）；判斷不出來時用 Breeze。下方「影片語言」選了英文、日文、韓文時也會改用 turbo。</p>
+          <label class="field"><span>Breeze-ASR-25 模型資料夾（OpenVINO 格式；空白＝模型位置\asr\ov\breeze-asr-25）</span><input name="asr_model_dir" autocomplete="off" placeholder="空白＝使用下方「本機 AI 模型」的模型位置"></label>
+          <div class="grid2">
+            <label class="field"><span>執行裝置</span>
+              <select name="asr_device">
+                <option value="auto">自動（先試顯示卡，不行改用處理器）</option>
+                <option value="CPU">處理器（CPU）</option>
+                <option value="GPU">顯示卡（GPU）</option>
+                <option value="NPU">NPU</option>
+              </select>
+            </label>
+            <label class="field"><span>影片語言</span>
+              <select name="asr_language">
+                <option value="auto">自動偵測</option>
+                <option value="zh">中文（含中英夾雜）</option>
+                <option value="en">英文</option>
+                <option value="ja">日文</option>
+                <option value="ko">韓文</option>
+              </select>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" name="asr_keep_mp3"> 辨識後保留抽出的 MP3（存在影片旁邊）</label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>本機 AI 模型</legend>
+          <p class="hint" style="margin:0">語音辨識、本機翻譯、本機重點摘要用的模型都放在同一個「模型位置」，每個模型在底下有固定的資料夾，和「影音轉逐字稿」（transcribe）專案共用同一份，不用重複下載。本程式不會刪除模型。</p>
+          <label class="field"><span>模型位置（通常留空即可＝環境變數 MODELS_ROOT，沒有時用 D:\models；要改時填完整路徑，例如 E:\models）</span><input name="models_root" autocomplete="off" placeholder="留空＝D:\models"></label>
+          <div class="field-note" id="modelsStatus"></div>
+          <div class="grid2">
+            <label class="field"><span>本機摘要用的 Gemma 4 大小</span>
+              <select name="local_llm">
+                <option value="auto">自動（依這台電腦的記憶體）</option>
+                <option value="e2b">E2B（小、最快；記憶體 16 GB 以下）</option>
+                <option value="e4b">E4B（平衡；記憶體 16～63 GB）</option>
+                <option value="26b">26B-A4B（品質最好；記憶體 64 GB 以上）</option>
+              </select>
+            </label>
+            <label class="field"><span>本機翻譯／摘要的執行裝置</span>
+              <select name="local_device">
+                <option value="auto">自動（有 Intel 顯示卡先用，不行改用處理器）</option>
+                <option value="GPU">顯示卡（GPU）</option>
+                <option value="CPU">處理器（CPU）</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>隱藏影片</legend>
+          <p class="hint" style="margin:0">加上 <b>#隱藏</b> 的影片預設不會出現在影片庫與下載佇列，要在影片庫按「隱藏影片」並輸入密碼才看得到。</p>
+          <div class="field-note" id="lockStatus"></div>
+          <div class="grid2">
+            <label class="field" id="oldPwField"><span>目前密碼</span><input type="password" id="pwOld" autocomplete="current-password"></label>
+            <label class="field"><span>新密碼（至少 4 個字元）</span><input type="password" id="pwNew" autocomplete="new-password"></label>
+          </div>
+          <div class="row"><button type="button" class="btn sm" id="pwSave">設定密碼</button><span class="hint" id="pwMsg"></span></div>
+          <p class="hint" style="margin:0">注意：這是介面上的隱藏，影片檔仍在下載資料夾中，用檔案總管還是看得到。</p>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>系統</legend>
+          <div class="env" id="envInfo"></div>
+          <div class="row"><button type="button" class="btn sm" id="updateBtn">更新 yt-dlp 下載核心</button><span class="hint" id="updateResult"></span></div>
+        </fieldset>
+        <div class="row sticky-save"><button class="btn primary" type="submit">儲存設定</button><span class="hint" id="saveMsg"></span></div>
+      </form>
+    </section>
+
+    <!-- 說明 -->
+    <section class="view" id="view-errors">
+      <div class="queue-head" style="margin-top:0">
+        <div class="row">
+          <select id="errCat" aria-label="錯誤類別" style="width:auto"><option value="">全部類別</option></select>
+          <select id="errLevel" aria-label="錯誤層級" style="width:auto">
+            <option value="">錯誤與警告</option><option value="錯誤">只看錯誤</option><option value="警告">只看警告</option>
+          </select>
+          <input type="search" id="errSearch" placeholder="搜尋訊息…" aria-label="搜尋錯誤訊息" style="width:auto;min-width:10rem">
+        </div>
+        <div class="row">
+          <button class="btn sm" id="errRefresh">重新整理</button>
+          <button class="btn sm" id="errOpen" title="用記事本開啟 data\error.log">開啟紀錄檔</button>
+          <button class="btn sm danger" id="errClear">清除紀錄</button>
+        </div>
+      </div>
+      <div class="hint" id="errInfo"></div>
+      <div class="err-list" id="errList"></div>
+      <div class="empty" id="errEmpty" hidden>沒有錯誤紀錄</div>
+    </section>
+
+    <section class="view" id="view-help">
+      <div class="card prose">
+        <h2>快速上手</h2>
+        <ol>
+          <li>在「下載佇列」貼上一個或多個影片網址，按 <b>加入佇列</b>，程式會依序下載。</li>
+          <li>影片存成 <b>MP4</b>，檔名使用影片原標題；字幕存成同名的 <b>.zh-TW.srt</b>／<b>.en.srt</b>。</li>
+          <li>到「影片庫」點選影片即可播放，可切換字幕、調整速度與全螢幕。</li>
+        </ol>
+        <h2>需要登入的影片</h2>
+        <p>請先安裝專案內 <code>chrome_extension</code> 資料夾的 Chrome 擴充功能（開發人員模式 →「載入未封裝項目」），在 Chrome 登入各網站後，按擴充功能的 <b>同步 Cookie</b>。擴充功能也會每 30 分鐘自動同步一次。</p>
+        <p><b>會員影片 Chrome 能播、下載器卻說沒有會員資格？</b>這通常是 YouTube 把一般分頁的登入 Cookie 輪替掉了。請改用無痕視窗同步：① <code>chrome://extensions</code> →「影片下載器同步」→「詳細資料」開啟「允許在無痕模式下執行」；② 開無痕視窗（Ctrl+Shift+N）登入有會員的 YouTube 帳號；③ 點擴充功能 →「從無痕視窗同步 YouTube 登入」；④ 直接關閉無痕視窗（不要登出）。</p>
+        <h2>重點摘要</h2>
+        <p>播放器按 <b>📝 重點摘要</b>，AI 會依原始字幕整理成最多 5 頁的簡報：第 1 頁是影片主旨、hashtag、100 字內大綱，以及是否「講概念／有範例／有程式」，有示範操作時另列簡短的操作步驟；第 2 頁起是各個重點，點重點旁的 <b>▶ 時間</b> 可直接跳到影片那一段。用 ← → 換頁、Esc 關閉，也可匯出成單一 HTML 檔分享。</p>
+        <p>整理模式勾選多部影片後按 <b>重點摘要所選</b> 可在背景批次產生；沒有字幕的影片會先語音辨識。摘要頁會顯示 AI 建議的 hashtag，但不會改動影片本身的 hashtag。需要先在 <code>.env</code> 設定 AI。</p>
+        <h2>播放器快捷鍵</h2>
+        <table class="keys">
+          <tr><td><kbd>空白</kbd>／<kbd>K</kbd></td><td>播放／暫停</td></tr>
+          <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>倒退／快轉 5 秒</td></tr>
+          <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>音量</td></tr>
+          <tr><td><kbd>&lt;</kbd> <kbd>&gt;</kbd></td><td>減速／加速</td></tr>
+          <tr><td><kbd>C</kbd></td><td>字幕開關</td></tr>
+          <tr><td><kbd>F</kbd></td><td>全螢幕</td></tr>
+          <tr><td><kbd>M</kbd></td><td>靜音</td></tr>
+          <tr><td><kbd>W</kbd></td><td>標示／取消「已看完」</td></tr>
+          <tr><td><kbd>S</kbd></td><td>標示／取消星號</td></tr>
+        </table>
+        <p class="hint">完整說明請見專案資料夾中的 README.md。</p>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sm-overlay g-overlay" id="gOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
+  <div class="sm-wrap">
+    <div class="sm-top">
+      <div class="sm-vt"><small>圖片摘要</small><span id="gTitle"></span></div>
+      <span class="g-pg" id="gPg"></span>
+      <div class="row">
+        <a class="btn sm" id="gOpen" target="_blank" rel="noopener" title="在新分頁開啟原圖">開啟原圖</a>
+        <button class="icon-btn" id="gClose" title="關閉（Esc）" aria-label="關閉"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+    </div>
+    <div class="g-box">
+      <div class="g-stage" id="gStage"><img id="gImg" alt=""></div>
+      <button class="g-side g-prev" id="gPrev" aria-label="上一張" title="上一張（←）">‹</button>
+      <button class="g-side g-next" id="gNext" aria-label="下一張" title="下一張（→）">›</button>
+    </div>
+  </div>
+</div>
+<div class="sm-overlay" id="smOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="smVideoTitle">
+  <div class="sm-wrap">
+    <div class="sm-top">
+      <div class="sm-vt"><small>重點摘要</small><span id="smVideoTitle"></span></div>
+      <div class="row">
+        <button class="btn sm" id="smRegen" title="依字幕重新請 AI 整理一次">重新產生</button>
+        <a class="btn sm" id="smExport" title="存成單一 HTML 檔，可分享或離線開啟">匯出 HTML</a>
+        <button class="icon-btn" id="smClose" title="關閉（Esc）" aria-label="關閉"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+    </div>
+    <div class="sm-box">
+      <div class="sm-stage" id="smStage"></div>
+      <div class="sm-nav"><button id="smPrev" aria-label="上一頁">‹</button><span id="smPg"></span><button id="smNext" aria-label="下一頁">›</button></div>
+    </div>
+    <div class="sm-warn" id="smWarn" hidden></div>
+    <div class="sm-foot" id="smMeta"></div>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
