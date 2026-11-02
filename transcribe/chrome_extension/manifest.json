@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "逐字稿登入同步",
+  "version": "1.0.0",
+  "description": "把你在 Chrome 的影片網站登入狀態同步給本機的「影音轉逐字稿」，讓需要登入的影片也能下載；右鍵可直接把影片加入轉逐字稿。",
+  "permissions": ["cookies", "storage", "alarms", "contextMenus", "notifications"],
+  "host_permissions": [
+    "http://127.0.0.1:8766/*",
+    "*://*.youtube.com/*", "*://*.google.com/*",
+    "*://*.facebook.com/*", "*://*.instagram.com/*",
+    "*://*.threads.net/*", "*://*.threads.com/*"
+  ],
+  "optional_host_permissions": ["*://*.x.com/*", "*://*.twitter.com/*", "*://*.bilibili.com/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_popup": "popup.html", "default_title": "逐字稿登入同步" },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}

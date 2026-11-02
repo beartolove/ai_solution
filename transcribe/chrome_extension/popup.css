@@ -1,0 +1,18 @@
+:root { --fog: #EEF3F1; --paper: #FBFCFB; --harbor: #12343B; --harbor-2: #1D4B55; --buoy: #F26B1D; --muted: #5B6B73; --line: #D3DEDA; --ok: #2F7D5B; --err: #B3261E; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --fog: #0F1C1F; --paper: #15262A; --harbor: #9CC9C9; --harbor-2: #7FB3B4; --muted: #9AABB0; --line: #2A3F44; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { width: 330px; margin: 0; padding: .7rem; background: var(--fog); color: var(--harbor); font: 14px/1.5 "Microsoft JhengHei UI", "Noto Sans TC", system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+h1 { font-size: 1.05rem; margin: 0; }
+h2 { font-size: .9rem; margin: 0 0 .4rem; }
+.box { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem; margin-bottom: .5rem; }
+.row { display: flex; justify-content: space-between; gap: .5rem; font-size: .85rem; margin-bottom: .2rem; }
+.lab { color: var(--muted); }
+.val { text-align: right; }
+.ok { color: var(--ok); font-weight: 700; } .bad { color: var(--err); font-weight: 700; }
+.err { color: var(--err); font-size: .82rem; margin: .3rem 0; }
+.note { color: var(--muted); font-size: .78rem; margin: .4rem 0 0; }
+button { width: 100%; margin-top: .4rem; padding: .45rem; border-radius: 8px; border: 1px solid var(--harbor-2); background: var(--paper); color: var(--harbor); font: inherit; cursor: pointer; }
+button.primary { background: var(--buoy); border-color: var(--buoy); color: #fff; font-weight: 700; }
+button:disabled { opacity: .6; cursor: wait; }
+label.grp { display: flex; align-items: center; gap: .45rem; padding: .15rem 0; font-size: .88rem; cursor: pointer; }

@@ -1,0 +1,24 @@
+# 影音轉逐字稿 — Python 套件（安裝在專案 .venv，setup.cmd 自動處理）
+# 本檔有變動時，下次執行 setup.cmd 會自動補裝
+
+# 語音辨識引擎（Intel OpenVINO：Intel 顯示卡或任何 CPU 皆可）
+# 2026.4 以上：D:\models 的模型都用 2026.4 轉出，舊版載入會當掉（需 Python 3.10 以上）
+openvino-genai>=2026.4
+numpy
+
+# 效能實測量測記憶體用量
+psutil
+
+# 簡體字 → 正體字（使用 s2tw，只轉字形），純 Python
+opencc-python-reimplemented
+
+# 網址下載
+yt-dlp[default,curl-cffi]
+
+# 模型下載
+huggingface_hub
+
+# 網頁介面
+fastapi
+uvicorn
+python-multipart

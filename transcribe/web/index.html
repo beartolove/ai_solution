@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影音轉逐字稿</title>
+<link rel="stylesheet" href="style.css">
+<script>/* 外觀（明亮／暗黑）在畫面出現前就套用，避免閃一下另一種顏色 */
+try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) { }</script>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="主選單">
+    <button class="icon-btn menu-btn" id="toggle" aria-label="收合或展開選單" aria-controls="side">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="0" y="0" width="40" height="40" rx="9" fill="currentColor"/>
+        <g stroke="#fff" stroke-width="3" stroke-linecap="round">
+          <line x1="9" y1="17" x2="9" y2="23"/><line x1="15" y1="12" x2="15" y2="28"/>
+          <line x1="21" y1="15" x2="21" y2="25"/>
+        </g>
+        <g stroke="#F26B1D" stroke-width="3" stroke-linecap="round">
+          <line x1="27" y1="16" x2="33" y2="16"/><line x1="27" y1="21" x2="33" y2="21"/><line x1="27" y1="26" x2="31" y2="26"/>
+        </g>
+      </svg>
+      <div class="brand-text">
+        <strong>影音轉逐字稿</strong>
+        <span class="ver" id="ver">v—</span>
+      </div>
+    </div>
+    <nav>
+      <a href="#transcribe" data-page="transcribe" data-tip="轉逐字稿" aria-label="轉逐字稿">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14"/></svg>
+        <span>轉逐字稿</span></a>
+      <a href="#history" data-page="history" data-tip="任務紀錄" aria-label="任務紀錄">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span>任務紀錄</span></a>
+      <a href="#bench" data-page="bench" data-tip="本機效能" aria-label="本機效能">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>
+        <span>本機效能</span></a>
+      <a href="#settings" data-page="settings" data-tip="參數設定" aria-label="參數設定">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+        <span>參數設定</span></a>
+    </nav>
+    <div class="side-tools">
+      <span class="tool-label">字型大小</span>
+      <div class="font-ctl" role="group" aria-label="字型大小">
+        <button data-fs="s" aria-label="縮小字型">A-</button>
+        <button data-fs="m" aria-label="標準字型">A</button>
+        <button data-fs="l" aria-label="放大字型">A+</button>
+      </div>
+      <span class="tool-label">外觀</span>
+      <div class="font-ctl theme-ctl" role="group" aria-label="外觀">
+        <button data-theme-set="auto" title="跟著系統的深色／淺色設定">自動</button>
+        <button data-theme-set="light">明亮</button>
+        <button data-theme-set="dark">暗黑</button>
+      </div>
+      <span class="tool-label">完成提示音</span>
+      <div class="sound-row">
+        <label class="switch"><input type="checkbox" id="soundOn"><span>轉檔完成時播放</span></label>
+        <button class="mini-btn" id="soundTest" type="button">試聽</button>
+      </div>
+    </div>
+    <div class="side-foot" id="machine"></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- 手機：選單收起時，左上角的漢堡按鈕 -->
+  <button class="icon-btn fab-menu" id="fabMenu" aria-label="開啟選單" aria-controls="side">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+
+  <div class="main">
+    <h1 class="page-title" id="title">轉逐字稿</h1>
+
+    <!-- 轉逐字稿 -->
+    <section class="page" id="page-transcribe">
+      <!-- 上半部：檔案或網址轉逐字稿（左：拖曳檔案／右：貼網址＋設定） -->
+      <section class="intake" aria-labelledby="intakeTitle">
+      <h2 class="sec" id="intakeTitle">檔案或網址轉逐字稿</h2>
+      <div class="intake-grid">
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="fileIn" multiple accept=".mp4,.mov,.mkv,.avi,.webm,.m4v,.wmv,.flv,.ts,.mp3,.m4a,.wav,.aac,.flac,.ogg,.wma,.opus,.amr">
+        <svg class="wave" viewBox="0 0 220 40" aria-hidden="true" id="wave"></svg>
+        <span class="drop-text"><span class="drop-main">把錄音或影片拖到這裡</span>
+        <span class="drop-sub">或點一下選擇檔案，可一次多個｜mp3、m4a、wav、mp4、mov 等</span></span>
+      </label>
+      <div class="url-col">
+        <form class="url-form" id="urlForm" autocomplete="off">
+          <label class="sr" for="urlIn">影片網址</label>
+          <input type="url" id="urlIn" inputmode="url" placeholder="或貼上影片網址（YT、FB、IG、脆、X、B站）" title="支援 YouTube、Facebook、Instagram、Threads（脆）、X（Twitter）、Bilibili（B站）等" required>
+          <div class="url-btns">
+            <button class="btn primary big" id="urlGo" type="submit">下載並轉逐字稿</button>
+            <button class="btn big" id="optsBtn" type="button" aria-expanded="false" aria-controls="optsPanel">⚙ 辨識設定</button>
+          </div>
+        </form>
+        <p class="hint url-hint">下載 mp4 影片（最高 1080p），一次一部。需要登入的影片，請先用「逐字稿登入同步」擴充功能同步（見參數設定）。</p>
+        <p class="note opts-sum" id="optsSum"></p>
+      </div>
+      </div>
+      <div class="opts" id="optsPanel" hidden>
+        <label>辨識模型
+          <select id="model">
+            <option value="">本機建議</option>
+            <option value="breeze">Breeze-ASR-25（準確，臺灣華語）</option>
+            <option value="turbo">large-v3-turbo（較快，打草稿）</option>
+          </select>
+        </label>
+        <label>語言
+          <select id="lang">
+            <option value="auto">自動判斷</option>
+            <option value="zh">中文</option>
+            <option value="en">英文</option>
+          </select>
+        </label>
+        <label>專有名詞庫
+          <select id="gloss"><option value="">不使用</option></select>
+        </label>
+        <label>分辨說話者
+          <select id="spk">
+            <option value="">不分辨</option>
+            <option value="auto">自動判斷人數</option>
+            <option value="2">2 人</option>
+            <option value="3">3 人</option>
+            <option value="4">4 人</option>
+            <option value="5">5 人</option>
+            <option value="6">6 人</option>
+          </select>
+        </label>
+        <label>整理逐字稿
+          <select id="tidy">
+            <option value="">不整理</option>
+            <option value="1">轉完自動整理（標點、分段、小標題）</option>
+          </select>
+        </label>
+        <p class="hint" id="recHint"></p>
+      </div>
+      </section>
+      <div class="sec-row"><h2 class="sec">處理中與最近完成</h2>
+        <button class="btn small" id="clearDone" hidden>清除已完成</button></div>
+      <ul class="jobs" id="activeJobs"></ul>
+    </section>
+
+    <!-- 任務紀錄 -->
+    <section class="page" id="page-history" hidden>
+      <div class="sort-bar" role="search" aria-label="搜尋、篩選與排序">
+        <input type="search" id="fltQ" placeholder="搜尋名稱或網址" aria-label="搜尋名稱或網址">
+        <select id="fltState" aria-label="狀態">
+          <option value="">全部狀態</option><option value="done">完成</option><option value="active">處理中／排隊</option>
+          <option value="error">失敗／未完成</option><option value="cancelled">已取消</option>
+        </select>
+        <select id="fltOrigin" aria-label="來源">
+          <option value="">全部來源</option><option value="upload">上傳</option><option value="url">網址</option>
+        </select>
+        <select id="fltDays" aria-label="期間">
+          <option value="">全部期間</option><option value="1">今天</option><option value="7">近 7 天</option><option value="30">近 30 天</option>
+        </select>
+        <select id="fltTag" aria-label="標籤"><option value="">全部標籤</option></select>
+        <select id="fltFeat" aria-label="功能">
+          <option value="">全部功能</option><option value="spk">有分辨說話者</option><option value="td">有整理稿</option><option value="tr">有翻譯</option><option value="ed">有校對</option>
+        </select>
+        <label>排序
+          <select id="sortKey">
+            <option value="created">建立時間</option>
+            <option value="name">名稱</option>
+            <option value="duration">錄音長度</option>
+            <option value="asr">辨識耗時</option>
+            <option value="state">狀態</option>
+            <option value="origin">來源（上傳／網址）</option>
+          </select>
+        </label>
+        <button type="button" class="btn small" id="sortDir" aria-label="切換升冪／降冪"></button>
+        <button type="button" class="btn small" id="fltClear">清除條件</button>
+        <span class="note" id="jobCount"></span>
+      </div>
+      <div class="batch-bar" id="batchBar">
+        <label class="check"><input type="checkbox" id="selAll"> 全選（目前篩選結果）</label>
+        <span class="batch-acts" id="batchActs" hidden>
+          <b id="selN">0</b> 筆已選取
+          <input type="text" id="batchTag" list="tagList" placeholder="標籤（可多個，用空白分隔）" aria-label="批次標籤">
+          <button type="button" class="btn small" data-batch="tag-add">加標籤</button>
+          <button type="button" class="btn small" data-batch="tag-remove">移除標籤</button>
+          <select id="batchSpk" aria-label="說話人數"><option value="auto">自動判斷人數</option><option value="2">2 人</option><option value="3">3 人</option><option value="4">4 人</option><option value="5">5 人</option><option value="6">6 人</option></select>
+          <button type="button" class="btn small" data-batch="diarize">分辨說話者</button>
+          <button type="button" class="btn small" data-batch="translate">翻譯成中文</button>
+          <button type="button" class="btn small" data-batch="zip">下載字幕（ZIP）</button>
+          <button type="button" class="btn small danger" data-batch="delete">刪除</button>
+          <button type="button" class="btn small" data-batch="clear">取消選取</button>
+        </span>
+      </div>
+      <datalist id="tagList"></datalist>
+      <ul class="jobs" id="allJobs"></ul>
+    </section>
+
+    <!-- 任務詳情 -->
+    <section class="page page-job" id="page-job" hidden>
+      <div id="jobDetail"></div>
+    </section>
+
+    <!-- 本機效能 -->
+    <section class="page" id="page-bench" hidden>
+      <div id="benchBody"></div>
+    </section>
+
+    <!-- 參數設定 -->
+    <section class="page" id="page-settings" hidden>
+      <div id="settingsBody"></div>
+    </section>
+  </div>
+</div>
+<dialog class="dlg" id="confirmDlg" aria-labelledby="dlgTitle">
+  <form method="dialog">
+    <h2 id="dlgTitle"></h2>
+    <p id="dlgMsg"></p>
+    <div class="dlg-btns">
+      <button class="btn" value="no" autofocus>返回</button>
+      <button class="btn danger" value="yes" id="dlgOk">確定</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

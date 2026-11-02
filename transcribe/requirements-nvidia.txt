@@ -1,0 +1,2 @@
+# 只在 NVIDIA 顯示卡（等級 A/B）的電腦額外安裝
+faster-whisper

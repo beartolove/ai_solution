@@ -1,0 +1,13 @@
+# 測試錄音（含內部會議內容），包含效能實測標準樣本都不進版控（2026-11-02：benchmark_sample.mp3 取自內部會議）
+samples/
+env-reports/
+.venv/
+jobs/
+__pycache__/
+tools/
+.venv-convert/
+.cache/
+
+# 媒體檔（0.6.7 起放 D:\mediafiles；沒有 D 槽時的暫存位置）與本機設定、cookies
+mediafiles/
+data/

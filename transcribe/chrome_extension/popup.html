@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>逐字稿登入同步</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header><img src="icons/icon48.png" alt="" width="28" height="28"><h1>逐字稿登入同步</h1></header>
+  <section class="box">
+    <div class="row"><span class="lab">轉逐字稿程式</span><span id="server" class="val">檢查中…</span></div>
+    <div class="row"><span class="lab">上次同步</span><span id="last" class="val">—</span></div>
+    <p id="err" class="err" hidden></p>
+    <button id="sync" class="primary">立即同步</button>
+  </section>
+  <section class="box">
+    <h2>同步這些網站的登入狀態</h2>
+    <div id="groups"></div>
+    <p class="note">只同步你勾選的網站，資料只送到本機（127.0.0.1）的轉逐字稿程式，不經過網路。每 30 分鐘自動同步一次。</p>
+  </section>
+  <section class="box">
+    <p class="note">在影片頁面或連結上按右鍵，選「轉逐字稿」即可直接加入。</p>
+    <button id="open">開啟轉逐字稿網頁</button>
+  </section>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

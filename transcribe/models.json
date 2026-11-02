@@ -1,0 +1,43 @@
+{
+  "_說明": "本專案需要的模型清單（0.14.0 起）。開發時維護，setup 與程式只讀不改。path 相對於模型位置（MODELS_ROOT，預設 D:\\models）。每台電腦實際用哪些，由 setup／網頁依「功能需求＋電腦環境＋效能實測」算出，存在 env-reports\\<電腦名稱>.models.json。",
+  "project": "transcribe",
+  "min_openvino": "2026.4",
+  "features": {
+    "transcribe": { "label": "轉逐字稿", "required": true, "note": "辨識語音，產生字幕與純文字（必選）" },
+    "tidy": { "label": "整理逐字稿與詞庫判讀", "note": "本機 LLM：加標點、分段、小標題；校對時判讀詞庫候選" },
+    "translate": { "label": "翻譯成中文", "note": "外文影片雙語對照（TranslateGemma）" },
+    "diarize": { "label": "分辨說話者", "note": "標出說話者 1、2…（pyannote）" }
+  },
+  "models": [
+    { "id": "breeze-ov", "feature": "transcribe", "role": "主力", "label": "Breeze-ASR-25（OpenVINO）",
+      "path": "asr/ov/breeze-asr-25", "check": ["openvino_encoder_model.xml"], "gb": 1.5, "openvino": true,
+      "from": "convert", "repo": "MediaTek-Research/Breeze-ASR-25",
+      "how": "執行 setup.cmd（從共用來源或本機 keyboard_free 複製；都沒有時請管理者執行 admin-convert-openvino.cmd）" },
+    { "id": "turbo-ov", "feature": "transcribe", "role": "快速草稿、交叉比對", "label": "Whisper large-v3-turbo（OpenVINO）",
+      "path": "asr/ov/large-v3-turbo", "check": ["openvino_encoder_model.xml"], "gb": 0.8, "openvino": true,
+      "from": "convert", "repo": "openai/whisper-large-v3-turbo", "how": "執行 setup.cmd（同上）" },
+    { "id": "gemma4-e2b", "feature": "tidy", "choice": "llm", "llm_key": "e2b", "ram_gb": [0, 15], "label": "Gemma 4 E2B（小、最快）",
+      "path": "llm/gemma-4-E2B-it-int4-ov", "check": ["openvino_language_model.xml", ".download_ok"], "gb": null, "openvino": true,
+      "from": "hf", "repo": "OpenVINO/gemma-4-E2B-it-int4-ov", "how": "自動從 Hugging Face 下載（不需帳號）" },
+    { "id": "gemma4-e4b", "feature": "tidy", "choice": "llm", "llm_key": "e4b", "ram_gb": [15, 60], "label": "Gemma 4 E4B（平衡）",
+      "path": "llm/gemma-4-E4B-it-int4-ov", "check": ["openvino_language_model.xml", ".download_ok"], "gb": 6.1, "openvino": true,
+      "from": "hf", "repo": "OpenVINO/gemma-4-E4B-it-int4-ov", "how": "自動從 Hugging Face 下載（不需帳號）" },
+    { "id": "gemma4-26b", "feature": "tidy", "choice": "llm", "llm_key": "26b", "ram_gb": [60, 9999], "label": "Gemma 4 26B-A4B（品質最好）",
+      "path": "llm/gemma-4-26b-a4b-it-int4-ov", "check": ["openvino_language_model.xml", ".download_ok"], "gb": 15, "openvino": true,
+      "from": "hf", "repo": "OpenVINO/gemma-4-26b-a4b-it-int4-ov", "how": "自動從 Hugging Face 下載（不需帳號）" },
+    { "id": "translategemma", "feature": "translate", "label": "TranslateGemma 4B",
+      "path": "llm/translategemma-4b-it", "check": ["openvino_language_model.xml", "prompt_templates.json"], "gb": 4.7, "openvino": true,
+      "from": "admin", "repo": "google/translategemma-4b-it",
+      "how": "從共用來源複製；沒有時請管理者執行 admin-download-translator.cmd" },
+    { "id": "pyannote", "feature": "diarize", "label": "pyannote community-1",
+      "path": "diarization/speaker-diarization-community-1", "check": ["config.yaml"], "gb": 0.03,
+      "from": "admin", "repo": "pyannote/speaker-diarization-community-1",
+      "how": "從共用來源複製；沒有時請管理者執行 admin-download-pyannote.cmd" },
+    { "id": "breeze-ct2", "feature": "transcribe", "tiers": ["A", "B"], "enabled": false, "label": "Breeze-ASR-25（faster-whisper，NVIDIA）",
+      "path": "asr/ct2/breeze-asr-25", "check": ["int8_float16"], "gb": 1.5,
+      "from": "hf", "repo": "shdennlin/breeze-asr-25-ct2", "how": "NVIDIA 用的 faster-whisper 引擎完成後才提供" },
+    { "id": "turbo-ct2", "feature": "transcribe", "tiers": ["A", "B"], "enabled": false, "label": "large-v3-turbo（faster-whisper，NVIDIA）",
+      "path": "asr/ct2/whisper-large-v3-turbo", "check": ["model.bin"], "gb": 1.6,
+      "from": "hf", "repo": "deepdml/faster-whisper-large-v3-turbo-ct2", "how": "NVIDIA 用的 faster-whisper 引擎完成後才提供" }
+  ]
+}
