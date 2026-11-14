@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MindFlow｜互動心智圖</title>
+<style>
+:root{color-scheme:dark;--bg:#151a20;--panel:#20262e;--panel2:#272e38;--line:#35414e;--text:#f2f3f5;--muted:#9ba9b7;--pink:#e7b0c2;--accent:#f5d79a}*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,-apple-system,"Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text)}.app{height:100dvh;display:grid;grid-template-columns:340px minmax(0,1fr);grid-template-rows:60px minmax(0,1fr)}header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);background:#1b2027}.brand{font-size:18px;font-weight:800;letter-spacing:.2px}.brand span{color:var(--pink)}.header-actions,.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}button,.file-btn{font:inherit;color:var(--text);background:var(--panel2);border:1px solid #475260;border-radius:9px;padding:7px 12px;cursor:pointer;white-space:nowrap}button:hover,.file-btn:hover{border-color:var(--pink);background:#323b46}button.primary,.file-btn.primary{background:#e7b0c2;color:#202127;border-color:#e7b0c2;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}aside{border-right:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:12px;min-height:0}aside h2{font-size:14px;margin:0}textarea{flex:1;min-height:150px;width:100%;resize:none;background:#151b22;color:#e8edf3;border:1px solid #43505c;border-radius:10px;padding:12px;font:13px/1.65 ui-monospace,Consolas,"Microsoft JhengHei",monospace;outline:none;tab-size:2}textarea:focus{border-color:var(--pink)}.hint,.status{color:var(--muted);font-size:12px}.status{min-height:32px}.upload{border:1px dashed #566575;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;cursor:pointer;color:#d9e1e8;text-align:center}.upload.drag{border-color:var(--pink);background:#3a303b}input[type=file]{display:none}.button-row{display:flex;gap:8px}.button-row>*{flex:1}.workspace{min-width:0;min-height:0;position:relative;overflow:hidden;background-color:#161b20;background-image:radial-gradient(#343c46 0.8px,transparent .8px);background-size:24px 24px}.floating{position:absolute;z-index:3;top:16px;left:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.floating.bottom{top:auto;bottom:15px}.floating span{background:#232a33bd;color:#c1cbd5;border:1px solid #36414d;border-radius:8px;padding:7px 11px;font-size:12px}.viewport{width:100%;height:100%;touch-action:none;cursor:grab}.viewport:active{cursor:grabbing}.edge{fill:none;stroke:#e7b0c2;stroke-width:2.1;opacity:.86}.node{cursor:pointer}.node rect{stroke:rgba(255,255,255,.12);stroke-width:1}.node text{fill:#f5f5f6;font:13px "Microsoft JhengHei",system-ui,sans-serif;pointer-events:none}.node .root-text{fill:#1d252d;font-weight:800;font-size:18px}.node .branch-text{fill:#27222b;font-weight:700;font-size:14px}.node .toggle{fill:#efc3d0;stroke:#53434f;stroke-width:1;cursor:pointer}.node .toggle-text{fill:#2b2830;font-size:12px;font-weight:bold;pointer-events:none}.node.selected rect:first-child{stroke:#fff3d9;stroke-width:2}.empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:#99a6b4}.empty.hidden{display:none}dialog{border:1px solid #5b6673;background:#212933;color:#f0f2f4;border-radius:14px;padding:22px;min-width:min(500px,90vw)}dialog::backdrop{background:#0009}dialog textarea{height:110px;min-height:110px;margin:12px 0 18px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px}.mobile-toggle{display:none}@media(max-width:850px){.app{grid-template-columns:1fr;grid-template-rows:58px auto minmax(0,1fr)}header{grid-column:1}.mobile-toggle{display:inline-block}aside{position:absolute;top:58px;bottom:0;width:min(340px,90vw);z-index:9;box-shadow:10px 0 25px #0007;transform:translateX(-105%);transition:transform .2s}aside.open{transform:translateX(0)}.workspace{grid-row:3}.app{grid-template-rows:58px minmax(0,1fr)}.workspace{grid-row:2}header .header-actions button:not(.mobile-toggle){font-size:12px;padding:6px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><span>✦</span> MindFlow <small style="font-size:11px;color:#91a0ae;font-weight:400">心智圖工作台</small></div><div class="header-actions"><button class="mobile-toggle" id="menuBtn">☰ 編輯區</button><button id="fitBtn">適合視窗</button><button id="svgBtn">匯出 SVG</button><button id="pngBtn" class="primary">匯出 PNG</button></div></header>
+<aside id="side"><h2>匯入心智圖內容</h2><label class="upload" id="dropzone">📂 選擇 TXT / MD 檔案，或拖放至此<input id="fileInput" type="file" accept=".txt,.md,.markdown,text/plain,text/markdown"></label><div class="hint">支援 Markdown 標題、縮排清單與 Tab 階層。第一個 # 標題作為中央主題；建議使用「-」加空格縮排，每層 2 個空格。</div><h2>Markdown 原始內容</h2><textarea id="source" spellcheck="false" placeholder="# 心智圖主題&#10;- 分支一&#10;  - 重點 A&#10;    - 細節說明&#10;- 分支二"></textarea><div class="button-row"><button class="primary" id="drawBtn">⟳ 產生心智圖</button><button id="sampleBtn">載入範例</button></div><div class="button-row"><button id="exportMdBtn">匯出 MD</button><button id="expandBtn">全部展開</button><button id="collapseBtn">收合分支</button></div><div id="status" class="status" aria-live="polite"></div></aside>
+<main class="workspace" id="workspace"><div class="floating"><button id="zoomOut">−</button><button id="zoomIn">＋</button><span id="zoomLabel">100%</span><span id="nodeCount">0 個節點</span></div><svg class="viewport" id="canvas" xmlns="http://www.w3.org/2000/svg"><g id="camera"><g id="links"></g><g id="nodes"></g></g></svg><div id="empty" class="empty hidden">請載入內容或點選「載入範例」</div><div class="floating bottom"><span>拖曳畫布平移 · 滾輪縮放 · 點分支圓點收合 · 雙擊節點編輯</span></div></main>
+</div>
+<dialog id="editDialog"><h2 style="margin:0">編輯節點文字</h2><textarea id="editText"></textarea><div class="dialog-actions"><button id="cancelEdit">取消</button><button class="primary" id="saveEdit">儲存變更</button></div></dialog>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), svg=$('canvas'),cam=$('camera'),links=$('links'),nodes=$('nodes'),source=$('source'),workspace=$('workspace');
+const NS='http://www.w3.org/2000/svg';let root=null,positions=new Map(),scale=1,pan={x:0,y:0},drag=null,activeEdit=null,chosen=null,nodeSeq=0,layoutBounds=null;
+const colors=['#e6b0c2','#b7c3ee','#a9d4c2','#e8ca9d','#c5b7e1','#e6bdac','#a5d4db','#e4d3a0'];
+const sample=`# Google 簡報 AI 自動套用企業範本
+- 企業簡報常見問題與流程優勢
+  - AI 生成的簡報容易不符合公司規範
+    - 字型、Logo、配色與版型需人工調整
+  - 自動套版可減少重複性排版時間
+    - 將時間留給分析、判斷與決策
+- 練習資料與八頁公司範本
+  - 教材資料
+    - 主管任務信與營收明細
+    - 專案進度、營運會議紀錄、業務快報
+  - 範本八頁
+    - 封面、報告對象、重點摘要
+    - 營收比較、專案進度、風險待決
+    - 後續行動、資料來源
+- 在 Google 雲端硬碟建立工作環境
+  - 建立 demo_slides 資料夾
+    - 上傳公司資料與簡報範本
+  - 開啟空白 Google 簡報
+    - 使用右上方 Gemini
+  - 將 PowerPoint 範本另存 Google 簡報
+    - 再選擇此範本作為視覺風格
+- 撰寫提示詞並審核生成計畫
+  - 要求八頁繁體中文主管簡報
+    - 使用指定資料、企業識別與範本
+    - 數字不可捏造，圖表文字須可編輯
+  - 審核 AI 提出的頁面規劃
+    - 確認後核准開始製作
+- 生成簡報並確認內容可編輯
+  - 對照範本檢查 Logo 與配色
+  - 對照八頁架構檢查主要內容
+    - 風險、待決、行動清單與資料來源
+- 微調投影片並查核內容
+  - 使用「美化這張投影片」調整版面
+    - 可選擇取代或插入新版本
+  - AI 產生數字要核對原始資料
+    - 未核准內容不可作為正式結論`;
+function node(text,depth=0,parent=null){return {id:++nodeSeq,text,depth,parent,children:[],collapsed:false,color:0}}
+function parse(t){const lines=t.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').split('\n'),entries=[];let inFence=false;
+for(const ln of lines){if(/^\s*```/.test(ln)){inFence=!inFence;continue}if(inFence||!ln.trim()||/^\s*>\s*\[!/.test(ln))continue;const h=ln.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);if(h){entries.push({type:'heading',level:h[1].length,text:h[2].trim()});continue}const m=ln.match(/^(\s*)(?:[-*+]\s+|\d+[.)]\s+)(.+?)\s*$/);if(m){entries.push({type:'list',indent:m[1].replace(/\t/g,'  ').length,text:m[2].trim()});continue}const tab=ln.match(/^(\t+)(\S.+)$/);if(tab){entries.push({type:'list',indent:tab[1].length*2,text:tab[2].trim()});continue}entries.push({type:'plain',text:ln.trim()})}
+if(!entries.length)throw Error('找不到可辨識的心智圖內容');let title=entries[0].text.replace(/^\*\*(.*?)\*\*$/,'$1'),start=1;if(entries[0].type==='list') {title='心智圖';start=0}const r=node(title),stack=[{depth:-1,n:r}],headings=[];let previous=null,baseIndent=null;
+for(let i=start;i<entries.length;i++){const e=entries[i];if(e.type==='heading'){const d=Math.max(1,e.level-(entries[0].type==='heading'?entries[0].level:0));while(headings.length&&headings.at(-1).level>=e.level)headings.pop();const parent=headings.length?headings.at(-1).n:r;const n=node(e.text,d,parent);parent.children.push(n);headings.push({level:e.level,n});previous=n;continue}
+if(e.type==='list'){if(baseIndent===null||e.indent<baseIndent)baseIndent=e.indent;const depth=Math.max(1,Math.floor((e.indent-baseIndent)/2)+1);while(stack.length>1&&stack.at(-1).depth>=depth)stack.pop();let parent=stack.at(-1).n;if(headings.length&&stack.length===1)parent=headings.at(-1).n;const n=node(e.text,parent.depth+1,parent);parent.children.push(n);stack.push({depth,n});previous=n;continue}
+if(e.type==='plain'){if(previous && entries[i-1]?.type==='plain'){previous.text+=' '+e.text}else{const parent=headings.length?headings.at(-1).n:r;const n=node(e.text,parent.depth+1,parent);parent.children.push(n);previous=n}}}
+if(!r.children.length && entries.length>1)throw Error('無法辨識分支，請使用「-」與縮排表示階層');return r}
+function visibleCount(n){return 1+(!n.collapsed?n.children.reduce((a,c)=>a+visibleCount(c),0):0)}
+function splitLines(t,max){let result=[];for(const paragraph of t.split('\n')){let current='',width=0;for(const ch of paragraph){const w=/[\x00-\xff]/.test(ch)?0.55:1;if(current&&width+w>max){result.push(current);current='';width=0}current+=ch;width+=w}result.push(current||' ')}return result.slice(0,12)}
+function measure(n){const max=n.depth===0?20:n.depth===1?16:25;const lines=splitLines(n.text,max),longest=Math.max(...lines.map(s=>[...s].reduce((acc,ch)=>acc+(/[\x00-\xff]/.test(ch)?.55:1),0)));const fs=n.depth===0?18:n.depth===1?14:13;return {lines,w:Math.max(n.depth===0?215:100,Math.min(390,longest*fs+28)),h:lines.length*(fs+5)+20,fs}}
+function compute(){positions.clear();if(!root)return;const gap=15,rootGap=130,levelGap=85;let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+function subtreeHeight(n){n._box=measure(n);if(n.collapsed||!n.children.length){n._sub=n._box.h;return n._sub}let total=n.children.reduce((a,c)=>a+subtreeHeight(c),0)+(n.children.length-1)*gap;n._sub=Math.max(total,n._box.h);return n._sub}
+function assign(n,x,centerY,dir){positions.set(n.id,{x,y:centerY,dir});const b=n._box;minX=Math.min(minX,x-b.w/2);maxX=Math.max(maxX,x+b.w/2);minY=Math.min(minY,centerY-b.h/2);maxY=Math.max(maxY,centerY+b.h/2);if(n.collapsed||!n.children.length)return;const full=n.children.reduce((a,c)=>a+c._sub,0)+(n.children.length-1)*gap;let cursor=centerY-full/2;for(const c of n.children){const cy=cursor+c._sub/2;const offset=b.w/2+levelGap+c._box.w/2;assign(c,x+dir*offset,cy,dir);cursor+=c._sub+gap}}
+root._box=measure(root);positions.set(root.id,{x:0,y:0,dir:0});minX=-root._box.w/2;maxX=root._box.w/2;minY=-root._box.h/2;maxY=root._box.h/2;
+const right=[],left=[];root.children.forEach((c,i)=>{c.color=i%colors.length;(i%2===0?right:left).push(c)});for(const [set,dir] of [[right,1],[left,-1]]){if(!set.length)continue;set.forEach(subtreeHeight);const total=set.reduce((a,c)=>a+c._sub,0)+(set.length-1)*30;let cursor=-total/2;for(const c of set){const cy=cursor+c._sub/2;assign(c,dir*(root._box.w/2+rootGap+c._box.w/2),cy,dir);cursor+=c._sub+30}}
+layoutBounds={minX,maxX,minY,maxY};}
+function el(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));if(parent)parent.appendChild(e);return e}
+function color(n){let p=n;while(p.parent&&p.parent!==root)p=p.parent;return colors[p.color%colors.length]}
+function render(){compute();links.replaceChildren();nodes.replaceChildren();if(!root)return;const all=[];function gather(n){all.push(n);if(!n.collapsed)n.children.forEach(gather)}gather(root);
+for(const n of all){if(!n.parent)continue;const p=positions.get(n.parent.id),q=positions.get(n.id),pw=n.parent._box.w,nw=n._box.w,dir=q.dir;let sx=p.x+dir*pw/2,ex=q.x-dir*nw/2;let c=Math.max(45,Math.abs(ex-sx)*.45);el('path',{class:'edge',d:`M${sx},${p.y} C${sx+dir*c},${p.y} ${ex-dir*c},${q.y} ${ex},${q.y}`,stroke:color(n)},links)}
+for(const n of all){const p=positions.get(n.id),box=n._box,g=el('g',{class:`node${n.id===chosen?' selected':''}`,transform:`translate(${p.x} ${p.y})`},nodes);const fill=n.depth===0?'#f5dfa7':n.depth===1?color(n):'#45434c';el('rect',{x:-box.w/2,y:-box.h/2,width:box.w,height:box.h,rx:n.depth===0?10:5,fill},g);const lh=box.fs+5,start=-((box.lines.length-1)*lh)/2+box.fs*.35;box.lines.forEach((line,i)=>{const t=el('text',{class:n.depth===0?'root-text':n.depth===1?'branch-text':'',x:0,y:start+i*lh,'text-anchor':'middle'},g);t.textContent=line});if(n.children.length){const tx=p.dir===-1?-box.w/2:box.w/2,ty=0;el('circle',{class:'toggle',cx:tx,cy:ty,r:9},g);const t=el('text',{class:'toggle-text',x:tx,y:4,'text-anchor':'middle'},g);t.textContent=n.collapsed?'+':'−';}g.addEventListener('click',e=>{e.stopPropagation();chosen=n.id;if(n.children.length){n.collapsed=!n.collapsed}render()});g.addEventListener('dblclick',e=>{e.stopPropagation();activeEdit=n;$('editText').value=n.text;$('editDialog').showModal();$('editText').focus()});const tt=el('title',{},g);tt.textContent=n.text+(n.children.length?'（點擊展開／收合）':'（雙擊編輯）')}
+$('nodeCount').textContent=all.length+' 個節點'+(all.length<visibleCountAll(root)?'（部分收合）':'');$('empty').classList.toggle('hidden',!!all.length);updateCamera()}
+function visibleCountAll(n){return 1+n.children.reduce((a,c)=>a+visibleCountAll(c),0)}
+function updateCamera(){cam.setAttribute('transform',`translate(${pan.x} ${pan.y}) scale(${scale})`);$('zoomLabel').textContent=Math.round(scale*100)+'%'}
+function fit(){if(!layoutBounds)return;const r=workspace.getBoundingClientRect(),w=layoutBounds.maxX-layoutBounds.minX+110,h=layoutBounds.maxY-layoutBounds.minY+110;scale=Math.max(.12,Math.min(2.0,(r.width-50)/w,(r.height-50)/h));pan.x=r.width/2-(layoutBounds.minX+layoutBounds.maxX)/2*scale;pan.y=r.height/2-(layoutBounds.minY+layoutBounds.maxY)/2*scale;updateCamera()}
+function rebuild(){try{nodeSeq=0;root=parse(source.value);chosen=null;render();fit();$('status').textContent='✓ 已解析 '+visibleCountAll(root)+' 個節點；雙擊節點可編輯文字。';$('side').classList.remove('open')}catch(e){$('status').textContent='⚠ '+e.message;alert(e.message)}}
+function zoom(factor,x=workspace.clientWidth/2,y=workspace.clientHeight/2){const old=scale;scale=Math.max(.1,Math.min(3,scale*factor));pan.x=x-(x-pan.x)*scale/old;pan.y=y-(y-pan.y)*scale/old;updateCamera()}
+svg.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.node'))return;drag={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};svg.setPointerCapture(e.pointerId)});svg.addEventListener('pointermove',e=>{if(!drag)return;pan.x=drag.px+e.clientX-drag.x;pan.y=drag.py+e.clientY-drag.y;updateCamera()});svg.addEventListener('pointerup',()=>drag=null);svg.addEventListener('pointercancel',()=>drag=null);svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect();zoom(e.deltaY<0?1.1:.9,e.clientX-r.left,e.clientY-r.top)},{passive:false});
+function stringify(n){const a=['# '+n.text];function walk(p,d){for(const c of p.children){a.push('  '.repeat(Math.max(0,d-1))+'- '+c.text.replace(/\n/g,' '));walk(c,d+1)}}walk(n,1);return a.join('\n')+'\n'}
+$('drawBtn').onclick=rebuild;$('sampleBtn').onclick=()=>{source.value=sample;rebuild()};$('fitBtn').onclick=fit;$('zoomIn').onclick=()=>zoom(1.2);$('zoomOut').onclick=()=>zoom(1/1.2);$('menuBtn').onclick=()=>$('side').classList.toggle('open');
+$('collapseBtn').onclick=()=>{if(!root)return;root.children.forEach(n=>n.collapsed=true);render();fit()};$('expandBtn').onclick=()=>{if(!root)return;function rec(n){n.collapsed=false;n.children.forEach(rec)}rec(root);render();fit()};
+$('saveEdit').onclick=()=>{if(!activeEdit)return;activeEdit.text=$('editText').value.trim()||activeEdit.text;source.value=stringify(root);render();$('editDialog').close()};$('cancelEdit').onclick=()=>$('editDialog').close();
+function download(data,name,type){let blob=data instanceof Blob?data:new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+function exportSVG(){if(!root)return null;const pad=55,b=layoutBounds,W=Math.ceil(b.maxX-b.minX+pad*2),H=Math.ceil(b.maxY-b.minY+pad*2);const clone=svg.cloneNode(true);clone.setAttribute('xmlns',NS);clone.setAttribute('width',W);clone.setAttribute('height',H);clone.setAttribute('viewBox',`0 0 ${W} ${H}`);clone.removeAttribute('class');clone.querySelector('#camera').setAttribute('transform',`translate(${pad-b.minX} ${pad-b.minY})`);const style=el('style',{},clone);style.textContent='.node text{font-family:"Microsoft JhengHei",sans-serif;font-size:13px;fill:#f5f5f6}.node .root-text{font-size:18px;font-weight:800;fill:#1d252d}.node .branch-text{font-size:14px;font-weight:700;fill:#27222b}.node .toggle-text{fill:#2b2830;font-size:12px;font-weight:bold}.edge{fill:none;stroke-width:2.1;opacity:.86}.node .toggle{fill:#efc3d0;stroke:#53434f}';const bg=el('rect',{width:W,height:H,fill:'#161b20'});clone.insertBefore(bg,clone.firstChild);return {xml:new XMLSerializer().serializeToString(clone),W,H}}
+$('svgBtn').onclick=()=>{const v=exportSVG();if(v)download(v.xml,'心智圖.svg','image/svg+xml;charset=utf-8')};$('pngBtn').onclick=()=>{const v=exportSVG();if(!v)return;const url=URL.createObjectURL(new Blob([v.xml],{type:'image/svg+xml;charset=utf-8'})),img=new Image();img.onload=()=>{const ratio=Math.min(2,7000/Math.max(v.W,v.H)),c=document.createElement('canvas');c.width=Math.round(v.W*ratio);c.height=Math.round(v.H*ratio);const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);c.toBlob(b=>{if(b)download(b,'心智圖.png','image/png');URL.revokeObjectURL(url)},'image/png')};img.onerror=()=>{URL.revokeObjectURL(url);alert('PNG 匯出失敗，請使用 SVG 匯出')};img.src=url};
+$('exportMdBtn').onclick=()=>{if(root)download(stringify(root),'心智圖.md','text/markdown;charset=utf-8')};
+async function loadFile(file){if(!file)return;if(!/\.(txt|md|markdown)$/i.test(file.name)){alert('請選擇 .txt 或 .md 格式');return}source.value=await file.text();rebuild()}
+$('fileInput').onchange=e=>loadFile(e.target.files[0]);const dz=$('dropzone');['dragenter','dragover'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&document.activeElement===source)rebuild()});window.addEventListener('resize',()=>{if(root)fit()});source.value=sample;rebuild();
+})();
+</script>
+</body></html>
